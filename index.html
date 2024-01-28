@@ -1,0 +1,167 @@
+<!--
+  - Slightly modified version of Project Nayuki's clock
+  - https://www.nayuki.io/page/full-screen-clock-javascript
+  -->
+<!DOCTYPE html>
+<html style="height:100%; margin:0; padding:0">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<title>Часы</title>
+		<style type="text/css">
+			html {
+                font-family: alarmfont;
+				background: #000000;
+				color: #fafc0f;
+			}
+            
+            #overlay_clock{
+                display: none;
+                position: absolute;
+                opacity: 0.2;
+                filter: blur(0px);
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+            }
+            #main_clock{
+                display: none;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+            }
+            span{
+                filter:blur(2px);
+                text-shadow: 0 0 15px #da000d, 0 0 40px #c90008, 0 0 65px #b60405, 0 0 85px #a90302, 0 0 110px #961010, 0 0 135px #661316, 0 0 150px #561c24;
+            }
+            #frame{
+                position: absolute;
+                background-color: #b90309;
+                position: fixed; 
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                filter: blur(64px);
+                opacity: .5;
+                display: none;
+
+            }
+            #clc{
+                width: 90%;
+                height: 50%;
+                text-align: center;
+            }
+            #seconds_mode{
+                position: absolute;
+                height: 10%;
+                width: 10%;
+                bottom: 0;
+                left: 0;
+            }
+            #black_foreground{
+                position: absolute;
+                height: 100%;
+                width: 100%;
+                background-color: black;
+                z-index: 2;
+                display: none;
+            }
+            @font-face {
+                font-family: alarmfont;
+                src: url(alarm_clock2.woff2);
+            }
+
+            
+		</style>
+	</head>
+	
+	<body style="display:flex; height:100%; margin:0; padding:0; justify-content:center; align-items:center">
+        <div id="black_foreground"></div>
+        <div id="clc">
+            <div id="overlay_clock" h="0" w="0">
+                <span class="bgr" style="font-kerning:none">88:88</span>
+            </div>
+            <div id="main_clock">
+		        <span id="clocktext_h" style="font-kerning:none"></span><span id="h_m">:</span><span id="clocktext_m" style="font-kerning:none"></span><span id="m_s" style="display: none;">:</span><span id="clocktext_s" style="font-kerning:none; display: none;"></span>
+            </div>
+        </div>
+        <div id="seconds_mode" onclick="secondsSwitcher()">
+        </div>
+		<script>
+			"use strict";
+
+            let textElem_h = $("#clocktext_h");
+			let textElem_m = $("#clocktext_m");
+			let textElem_s = $("#clocktext_s");
+
+            let textElem_hm = $("#h_m");
+			let textElem_ms = $("#m_s");
+			
+            let redFrame = $("#clc")
+            let shadowClock = $("#overlay_clock")
+            let main_clock = $("#main_clock")
+            let shadowClockText = $(".bgr")
+            let secondsMode = false
+            let bf = $("#black_foreground")
+
+            main_clock.fadeIn()
+            shadowClock.fadeIn()
+
+			function updateClock() {    
+				const d = new Date();
+                let d_h = (10 > d.getHours  () ? "0" : "") + d.getHours  () ;
+                let d_m = (10 > d.getMinutes() ? "0" : "") + d.getMinutes();
+                let d_s = (10 > d.getSeconds() ? "0" : "") + d.getSeconds();
+
+                textElem_h.text(d_h);
+                textElem_m.text(d_m);
+                textElem_s.text(d_s);
+				setTimeout(updateClock, 1000 - d.getTime() % 1000 + 20);
+			}
+			
+			function updateTextSize() {
+                let currentFontSize = parseInt(shadowClock.css("fontSize")) 
+                let rfp_width = redFrame.width()
+                let shadow_heigth = shadowClock.height()
+                let shadow_width = shadowClock.width()
+                if (shadow_heigth==0 && shadow_width ==0){
+                    shadow_heigth  = parseInt(shadowClock.attr('h'))
+                    shadow_width  = parseInt(shadowClock.attr('w'))
+                }
+                let shadow_factor = shadow_heigth/shadow_width
+
+                let ww_factor = rfp_width/shadow_width
+                let ff = ww_factor*currentFontSize
+                let newFontSize = parseInt(ff)
+                redFrame[0].style.fontSize = newFontSize + "px";
+                shadowClock.attr('h', shadowClock.height())
+                shadowClock.attr('w', shadowClock.width())
+			}
+
+            function secondsSwitcher(){
+                bf.fadeIn('slow', function(){
+                    if (!secondsMode){
+                        textElem_ms.css('display', 'inline')
+                        textElem_s.css('display', 'inline')
+                        shadowClockText.text('88:88:88')
+                        secondsMode = true
+                    }else{
+                        textElem_ms.css('display', 'none')
+                        textElem_s.css('display', 'none')
+                        shadowClockText.text('88:88')
+                        secondsMode = false
+                    }
+                    updateTextSize()
+                    bf.fadeOut()
+                    })
+                }
+            
+            window.onload = updateTextSize;
+            window.addEventListener("resize", updateTextSize);
+            updateClock();
+            
+		</script>
+	</body>
+</html>
