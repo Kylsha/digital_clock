@@ -34,7 +34,8 @@
             }
             span{
                 filter:blur(2px);
-                text-shadow: 0 0 15px #da000d, 0 0 40px #c90008, 0 0 65px #b60405, 0 0 85px #a90302, 0 0 110px #961010, 0 0 135px #661316, 0 0 150px #561c24;
+                /* text-shadow: 0 0 15px #da000d, 0 0 40px #c90008, 0 0 65px #b60405, 0 0 85px #a90302, 0 0 110px #961010, 0 0 135px #661316, 0 0 150px #561c24; */
+                /* text-shadow: 0 0 15px #4ac900, 0 0 40px #3fa702, 0 0 65px #2e7a01, 0 0 85px #225703, 0 0 110px #1e4408, 0 0 135px #0e1f05, 0 0 150px #050c02; */
             }
             #frame{
                 position: absolute;
@@ -60,6 +61,13 @@
                 bottom: 0;
                 left: 0;
             }
+            #color_mode{
+                position: absolute;
+                height: 10%;
+                width: 10%;
+                bottom: 0;
+                right: 0;
+            }
             #black_foreground{
                 position: absolute;
                 height: 100%;
@@ -70,7 +78,7 @@
             }
             @font-face {
                 font-family: alarmfont;
-                src: url(alarm_clock2.woff2);
+                src: url(alarm_clock3.woff2);
             }
 
             
@@ -87,8 +95,8 @@
 		        <span id="clocktext_h" style="font-kerning:none"></span><span id="h_m">:</span><span id="clocktext_m" style="font-kerning:none"></span><span id="m_s" style="display: none;">:</span><span id="clocktext_s" style="font-kerning:none; display: none;"></span>
             </div>
         </div>
-        <div id="seconds_mode" onclick="secondsSwitcher()">
-        </div>
+        <div id="seconds_mode" onclick="secondsSwitcher()"></div>
+        <div id="color_mode" onclick="colorSwitcher()"></div>
 		<script>
 			"use strict";
 
@@ -106,8 +114,37 @@
             let secondsMode = false
             let bf = $("#black_foreground")
 
+            
+
+            let colors_array = [
+                ['#fafc0f', '0 0 15px #da000d, 0 0 40px #c90008, 0 0 65px #b60405, 0 0 85px #a90302, 0 0 110px #961010, 0 0 135px #661316, 0 0 150px #561c24'], // yellow
+                ['#03f9f4', '0 0 15px #0950f8, 0 0 40px #0741ca, 0 0 65px #063194, 0 0 85px #021f63, 0 0 110px #05205f, 0 0 135px #011544, 0 0 150px #02184b'], // blue
+                ['#87eb4d', '0 0 15px #4ac900, 0 0 40px #3fa702, 0 0 65px #2e7a01, 0 0 85px #225703, 0 0 110px #1e4408, 0 0 135px #0e1f05, 0 0 150px #050c02'], // green
+                ['black', '0 0 15px #da000d, 0 0 40px #c90008, 0 0 65px #b60405, 0 0 85px #a90302, 0 0 110px #961010, 0 0 135px #661316, 0 0 150px #561c24'] // black
+            ]
+            var digitColor = "#fafc0f";
+            if (localStorage.getItem("dcolor") == null && localStorage.getItem("dcolor_shadow") == null){
+                localStorage.setItem("dcolor", digitColor);
+                localStorage.setItem("dcolor_shadow", '0 0 15px #da000d, 0 0 40px #c90008, 0 0 65px #b60405, 0 0 85px #a90302, 0 0 110px #961010, 0 0 135px #661316, 0 0 150px #561c24');
+                console.log('not defined')
+            }else{
+                $('html').css('color', localStorage.getItem("dcolor")) 
+                $('span').css('text-shadow',  localStorage.getItem("dcolor_shadow")) 
+            }
+            if (localStorage.getItem("seconds_mode") == null || localStorage.getItem("seconds_mode") == 'false'){
+                textElem_ms.css('display', 'none')
+                textElem_s.css('display', 'none')
+                shadowClockText.text('88:88')
+                localStorage.setItem("seconds_mode", false);
+            }else{
+                textElem_ms.css('display', 'inline')
+                textElem_s.css('display', 'inline')
+                shadowClockText.text('88:88:88')
+            }
+
             main_clock.fadeIn()
             shadowClock.fadeIn()
+            
 
 			function updateClock() {    
 				const d = new Date();
@@ -142,25 +179,50 @@
 
             function secondsSwitcher(){
                 bf.fadeIn('slow', function(){
-                    if (!secondsMode){
+                    var mode = localStorage.getItem("seconds_mode")
+                    if (mode=='false'){
                         textElem_ms.css('display', 'inline')
                         textElem_s.css('display', 'inline')
                         shadowClockText.text('88:88:88')
-                        secondsMode = true
+                        localStorage.setItem("seconds_mode", true);
                     }else{
                         textElem_ms.css('display', 'none')
                         textElem_s.css('display', 'none')
                         shadowClockText.text('88:88')
-                        secondsMode = false
+                        localStorage.setItem("seconds_mode", false);
                     }
                     updateTextSize()
                     bf.fadeOut()
                     })
                 }
+
+            function colorSwitcher(){
+                let current_color = localStorage.getItem("dcolor");
+                for (let i = 0; i < colors_array.length; i++) {
+                    var clr = colors_array[i][0]
+                    var clr_shadow = colors_array[i][1]
+                    if (clr == current_color){
+                        if (i==colors_array.length-1){
+                            var new_color = colors_array[0][0]
+                            var new_color_shadow = colors_array[0][1]
+                        }else{
+                            var new_color = colors_array[i+1][0]
+                            var new_color_shadow = colors_array[i+1][1]
+                        }
+                    }
+                }
+                localStorage.setItem("dcolor", new_color);
+                localStorage.setItem("dcolor_shadow", new_color_shadow);
+                $('html').css('color', new_color) 
+                $('span').css('text-shadow', new_color_shadow) 
+            }
+
             
+            // var someVarName = 
             window.onload = updateTextSize;
             window.addEventListener("resize", updateTextSize);
             updateClock();
+            
             
 		</script>
 	</body>
