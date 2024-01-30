@@ -68,6 +68,13 @@
                 bottom: 0;
                 right: 0;
             }
+            #font_mode{
+                position: absolute;
+                height: 10%;
+                width: 10%;
+                top: 0;
+                right: 0;
+            }
             #black_foreground{
                 position: absolute;
                 height: 100%;
@@ -79,6 +86,10 @@
             @font-face {
                 font-family: alarmfont;
                 src: url(alarm_clock3.woff2);
+            }
+            @font-face {
+                font-family: alarmfont_d;
+                src: url(alarm_clock5.woff2);
             }
 
             
@@ -97,6 +108,7 @@
         </div>
         <div id="seconds_mode" onclick="secondsSwitcher()"></div>
         <div id="color_mode" onclick="colorSwitcher()"></div>
+        <div id="font_mode" onclick="fontSwitcherSmooth()"></div>
 		<script>
 			"use strict";
 
@@ -114,14 +126,14 @@
             let secondsMode = false
             let bf = $("#black_foreground")
 
-            
-
             let colors_array = [
                 ['#fafc0f', '0 0 15px #da000d, 0 0 40px #c90008, 0 0 65px #b60405, 0 0 85px #a90302, 0 0 110px #961010, 0 0 135px #661316, 0 0 150px #561c24'], // yellow
                 ['#03f9f4', '0 0 15px #0950f8, 0 0 40px #0741ca, 0 0 65px #063194, 0 0 85px #021f63, 0 0 110px #05205f, 0 0 135px #011544, 0 0 150px #02184b'], // blue
                 ['#87eb4d', '0 0 15px #4ac900, 0 0 40px #3fa702, 0 0 65px #2e7a01, 0 0 85px #225703, 0 0 110px #1e4408, 0 0 135px #0e1f05, 0 0 150px #050c02'], // green
                 ['black', '0 0 15px #da000d, 0 0 40px #c90008, 0 0 65px #b60405, 0 0 85px #a90302, 0 0 110px #961010, 0 0 135px #661316, 0 0 150px #561c24'] // black
             ]
+
+            // set color
             var digitColor = "#fafc0f";
             if (localStorage.getItem("dcolor") == null && localStorage.getItem("dcolor_shadow") == null){
                 localStorage.setItem("dcolor", digitColor);
@@ -131,6 +143,8 @@
                 $('html').css('color', localStorage.getItem("dcolor")) 
                 $('span').css('text-shadow',  localStorage.getItem("dcolor_shadow")) 
             }
+
+            // set seconds mode
             if (localStorage.getItem("seconds_mode") == null || localStorage.getItem("seconds_mode") == 'false'){
                 textElem_ms.css('display', 'none')
                 textElem_s.css('display', 'none')
@@ -141,6 +155,14 @@
                 textElem_s.css('display', 'inline')
                 shadowClockText.text('88:88:88')
             }
+
+            // set font
+            if (localStorage.getItem("font") == null){
+                localStorage.setItem("font", 'classic_digit');
+            }else{
+                fontSwitcher()
+            }
+
 
             main_clock.fadeIn()
             shadowClock.fadeIn()
@@ -177,18 +199,60 @@
                 shadowClock.attr('w', shadowClock.width())
 			}
 
+            function fontSwitcherSmooth(){
+                bf.fadeIn('slow', function(){
+                    fontSwitcher()
+                    setTimeout(() => { 
+                        updateTextSize()
+                    }, 100);
+                    
+                    bf.fadeOut()
+                })
+            }
+            function fontSwitcher(){
+                var current_font = localStorage.getItem("font")
+                var current_shadow_text = shadowClockText.text()
+                var newshadowClockText = ''
+                if(current_font=='classic_digit'){
+                    $('html').css('font-family', 'alarmfont_d') 
+                    newshadowClockText = current_shadow_text.replace(/8/g, "O").replace(/:/g, ".")
+                    localStorage.setItem("font", 'soviet_digit');
+                    textElem_hm.text('.')
+                    textElem_ms.text('.')
+                }else{
+                    $('html').css('font-family', 'alarmfont') 
+                    newshadowClockText = current_shadow_text.replace(/O/g, "8").replace(/\./g, ":")
+                    localStorage.setItem("font", 'classic_digit');
+                    textElem_hm.text(':')
+                    textElem_ms.text(':')
+                }
+                shadowClockText.text(newshadowClockText)
+                console.log(shadowClockText.text())
+            }
+
             function secondsSwitcher(){
+
                 bf.fadeIn('slow', function(){
                     var mode = localStorage.getItem("seconds_mode")
+                    var current_font = localStorage.getItem("font")
                     if (mode=='false'){
                         textElem_ms.css('display', 'inline')
                         textElem_s.css('display', 'inline')
-                        shadowClockText.text('88:88:88')
+                        if (current_font=='classic_digit'){
+                            shadowClockText.text('88:88:88')
+                        }else{
+                            shadowClockText.text('OO.OO.OO')
+                        }
+                        
                         localStorage.setItem("seconds_mode", true);
                     }else{
                         textElem_ms.css('display', 'none')
                         textElem_s.css('display', 'none')
-                        shadowClockText.text('88:88')
+                        if (current_font=='classic_digit'){
+                            shadowClockText.text('88:88')
+                        }else{
+                            shadowClockText.text('OO.OO')
+                        }
                         localStorage.setItem("seconds_mode", false);
                     }
                     updateTextSize()
